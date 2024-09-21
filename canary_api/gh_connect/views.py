@@ -17,12 +17,16 @@ class GH_UserViewSet(viewsets.ModelViewSet):
 
 class LoginEndpoint(APIView):
     def get(self, request):
-        data = {"message": "This is the GET login"}
-        pprint(request)
-        return Response(data, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def post(self, request):
         data = {"message": "This is the POST login"}
-        pprint(request)
-        return Response(data, status=status.HTTP_200_OK)
+        email = request.data.get('email')
+        password = request.data.get('password')
 
+        if email == "testuser@gmail.com" and password == "password":
+            data["message"] = "Login successful"
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            data["message"] = "Login failed"
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
