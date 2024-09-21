@@ -1,6 +1,8 @@
 # Canary Homework
 
+This app is a combined codebase of Django and Vue components
 
+  
 
 ## Set up database
 
@@ -26,7 +28,9 @@
 
 
 
-## Set up Python runtime virtual environment
+## Django Config
+
+### Set up Python runtime virtual environment
 
 1. Install virtualenv
 
@@ -50,7 +54,7 @@
 
 
 
-## Configure Django
+### Configure Django
 
 1. Install postgres connectivity library
 
@@ -66,10 +70,13 @@
 
 
 
-## Set up Vue
+## VUE Setup
 
-1. go to canary_vue project
-2. run by typing `npm run dev` and the server will run at http://localhost:5173/
+### Set up Vue
+
+1. v22.9.0 (npm v10.8.3)
+2. go to canary_vue project
+3. run by typing `npm run dev` and the server will run at http://localhost:5173/
 
 
 
