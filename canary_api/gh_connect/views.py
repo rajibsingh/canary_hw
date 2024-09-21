@@ -1,3 +1,5 @@
+
+from pprint import pprint
 from django.shortcuts import render
 
 from rest_framework import viewsets
@@ -15,6 +17,12 @@ class GH_UserViewSet(viewsets.ModelViewSet):
 
 class LoginEndpoint(APIView):
     def get(self, request):
-        data = {"message": "Hello, this is a custom endpoint!"}
+        data = {"message": "This is the GET login"}
+        pprint(request)
+        return Response(data, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def post(self, request):
+        data = {"message": "This is the POST login"}
+        pprint(request)
         return Response(data, status=status.HTTP_200_OK)
 
