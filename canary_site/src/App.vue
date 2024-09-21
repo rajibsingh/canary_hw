@@ -1,7 +1,8 @@
 <!-- src/App.vue -->
 <template>
   <div id="app">
-    <Login />
+    <router-view></router-view>
+<!--    <Login />-->
   </div>
 </template>
 

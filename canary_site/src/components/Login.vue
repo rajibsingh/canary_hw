@@ -33,10 +33,14 @@ const handleLogin = async () => {
       password: password.value,
     });
 
+    alert('Login successful!');
     // If login is successful, navigate to the desired route
     console.log('Login successful:', response.data);
-    router.push('/home'); // Redirect the user to the new page or area
+    router.push('/home');
+    // router.replace('/home');
+    // $router.push({ name: 'home' })
   } catch (error) {
+
     console.error('Login failed:', error);
     alert('Login failed. Please check your credentials.');
   }
