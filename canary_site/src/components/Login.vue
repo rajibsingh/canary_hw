@@ -11,8 +11,10 @@
 import { onMounted } from 'vue';
 
 // Access the GitHub client ID from environment variables
-const clientId = import.meta.env.GITHUB_CLIENT_ID;
-const redirectUri = 'http://127.0.0.1:8000/gh_connect/callback/'; // Your registered redirect URI
+const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+console.log('*** clientId', clientId);
+// const redirectUri = 'http://127.0.0.1:8000/gh_connect/callback/'; // Your registered redirect URI
+const redirectUri = 'http://127.0.0.1:5173/home'; // Your registered redirect URI
 const scope = 'user'; // Adjust scope as needed
 
 onMounted(() => {
