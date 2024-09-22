@@ -1,6 +1,6 @@
 # Canary Homework
 
-This app is a combined codebase of Django and Vue components
+The repo contains both two codebases,
 
   
 
@@ -44,29 +44,27 @@ This app is a combined codebase of Django and Vue components
 
 ​	`source canaryenv/bin/activate`
 
-4. Install django
+4. Install django and all the dependencies
 
-   `pip install django`
+   `pip install -r requirements.txt`
 
 5. Test django is installed
 
 ​	`django-admin --version`
 
+6. examine the sample.env and replace the GITHUB_CLIENT_ID and the GITHUB_CLIENT_SECRET with correct entries for your github account. Once this is done, rename the file to .env so that the application will be able to read it
 
-
-### Configure Django
-
-1. Install postgres connectivity library
+7. Install postgres connectivity library
 
 ​	`pip install psycopg2-binary`
 
-2. Run local dev server
+8. Run local dev server
 
 ​	`python manage.py runserver`
 
-3. Set up a super-user
+9. Set up a super-user
 
-   `python manage.py createsuperuser --username=raj --email=rajibsingh@gmail.com`
+​	`python manage.py createsuperuser --username=raj --email=rajibsingh@gmail.com`
 
 
 
@@ -80,8 +78,18 @@ This app is a combined codebase of Django and Vue components
 
 
 
+### Register OAuth Application
 
+Homepage: http://127.0.0.1:8000
 
+Auth callback URL: http://127.0.0.1:8000/gh_connect/callback/
 
+Device Flow does not need to be enabled
 
-Stuff to 
+Client ID: 
+
+`Ov23li4yCojB4jPOyIwJ`
+
+Client Secret:  
+
+l

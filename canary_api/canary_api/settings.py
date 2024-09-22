@@ -9,11 +9,23 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import environ
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialize environment variables
+env = environ.Env()
+
+# Read environment variables from a .env file
+print("***: " + os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# Access the variables
+GITHUB_CLIENT_ID = env('GITHUB_CLIENT_ID')
+GITHUB_CLIENT_SECRET = env('GITHUB_CLIENT_SECRET')
 
 
 # Quick-start development settings - unsuitable for production
@@ -147,7 +159,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  # Allow requests from your frontend's origin
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:5173',  # Allow requests from your frontend's origin
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
+
+GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
+GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
 

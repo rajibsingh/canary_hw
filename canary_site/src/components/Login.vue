@@ -1,98 +1,61 @@
 <!-- src/components/Login.vue -->
 <template>
-  <div class="login-container">
-    <h2>Login</h2>
-    <form @submit.prevent="handleLogin">
-      <div class="input-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" v-model="email" required />
-      </div>
-      <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="password" required />
-      </div>
-      <button type="submit">Login</button>
-    </form>
+  <div class="overlay">
+    <div class="login-container">
+      <h2>Redirecting to GitHub for Authentication...</h2>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted } from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router'; // Import useRouter to handle navigation
+import { useRouter } from 'vue-router';
 
-const email = ref('');
-const password = ref('');
-const router = useRouter(); // Initialize the router instance
+const router = useRouter();
 
-const handleLogin = async () => {
+onMounted(async () => {
   try {
-    // Send a POST request to the backend service
-    const response = await axios.post('http://127.0.0.1:8000/gh_connect/login/', {
-      email: email.value,
-      password: password.value,
-    });
-
-    alert('Login successful!');
-    // If login is successful, navigate to the desired route
-    console.log('Login successful:', response.data);
-    router.push('/home');
-    // router.replace('/home');
-    // $router.push({ name: 'home' })
+    // Immediately forward the user to GitHub OAuth endpoint by calling the backend
+    const response = await axios.get('http://127.0.0.1:8000/gh_connect/login/');
+    if (response.status === 200) {
+      // The backend should handle the redirect to GitHub OAuth
+      console.log('Redirecting to GitHub OAuth...');
+    }
   } catch (error) {
-
-    console.error('Login failed:', error);
-    alert('Login failed. Please check your credentials.');
+    console.error('Failed to redirect to GitHub OAuth:', error);
+    alert('An error occurred while trying to authenticate with GitHub.');
+    // Optionally redirect to a fallback or error page
+    router.push('/');
   }
-};
+});
 </script>
 
 <style scoped>
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Gray overlay with transparency */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* High z-index to ensure it overlays other content */
+}
+
 .login-container {
-  width: 300px;
+  background-color: #ffffff;
   padding: 2rem;
-  background-color: white;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
+  color: #333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 h2 {
-  margin-bottom: 1rem;
+  margin: 0;
   font-size: 1.5rem;
-}
-
-.input-group {
-  margin-bottom: 1rem;
-  text-align: left;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-button {
-  width: 100%;
-  padding: 0.5rem;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-button:hover {
-  background-color: #369f75;
 }
 </style>

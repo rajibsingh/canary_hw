@@ -139,7 +139,7 @@ GitHub.sublime-settings
 
 
 
-### VUE ignores from 
+### VUE ignores 
 DS_Store
 node_modules
 /dist
