@@ -9,25 +9,18 @@
 
 <script setup>
 import { onMounted } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
 
-const router = useRouter();
+// Access the GitHub client ID from environment variables
+const clientId = import.meta.env.GITHUB_CLIENT_ID;
+const redirectUri = 'http://127.0.0.1:8000/gh_connect/callback/'; // Your registered redirect URI
+const scope = 'user'; // Adjust scope as needed
 
-onMounted(async () => {
-  try {
-    // Immediately forward the user to GitHub OAuth endpoint by calling the backend
-    const response = await axios.get('http://127.0.0.1:8000/gh_connect/login/');
-    if (response.status === 200) {
-      // The backend should handle the redirect to GitHub OAuth
-      console.log('Redirecting to GitHub OAuth...');
-    }
-  } catch (error) {
-    console.error('Failed to redirect to GitHub OAuth:', error);
-    alert('An error occurred while trying to authenticate with GitHub.');
-    // Optionally redirect to a fallback or error page
-    router.push('/');
-  }
+onMounted(() => {
+  // Construct the full GitHub OAuth URL
+  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
+
+  // Redirect the user directly to GitHub's OAuth page
+  window.location.href = githubAuthUrl;
 });
 </script>
 
