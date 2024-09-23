@@ -20,13 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 
 # Read environment variables from a .env file
-print("***: " + os.path.join(BASE_DIR, '.env'))
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Access the variables
 GITHUB_CLIENT_ID = env('GITHUB_CLIENT_ID')
 GITHUB_CLIENT_SECRET = env('GITHUB_CLIENT_SECRET')
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -104,11 +102,10 @@ DATABASES = {
         'NAME': 'canarydb',
         'USER': 'canary',
         'PASSWORD': 'c4n4ry',
-        'HOST': 'localhost',  # Or the address of your database server
-        'PORT': '5432',        # Default port for PostgreSQL
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -161,10 +158,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:5173',  # Allow requests from your frontend's origin
-# ]
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',  # Allow requests from frontend's origin
+]
+# CORS_ALLOW_ALL_ORIGINS = True
 
 GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
 GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
@@ -174,3 +171,18 @@ CSP_SCRIPT_SRC = [
     "'unsafe-inline'",  # Not recommended for production without understanding risks
     'https://github.com',
 ]
+
+CSRF_COOKIE_NAME = "csrftoken"  # Default name of the CSRF token cookie
+CSRF_COOKIE_HTTPONLY = False    # Allows JavaScript to access the cookie (necessary to set it to False)
+
+# Allow credentials (e.g., cookies) to be sent in CORS requests
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",  # Allow CSRF requests from your frontend
+]
+
+WEBHOOK_SECRET_TOKEN = os.getenv('WEBHOOK_SECRET_TOKEN')
+
+

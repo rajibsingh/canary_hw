@@ -1,14 +1,25 @@
 
 from django.shortcuts import redirect
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth.models import User  # Import Django's User model
+from django.contrib.auth import login  # Import login function to log in the user
 from django.conf import settings
+from .models import UserRepository
 import requests
+import logging
+
+import pprint
 
 from .models import GH_User
 from .serializers import GH_UserSerializer
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 class GH_UserViewSet(viewsets.ModelViewSet):
@@ -53,13 +64,91 @@ class GitHubCallback(APIView):
         # Fetch user details with the access token
         access_token = token_data['access_token']
 
+        # Handle creation of Django User and GH_User
+        # Fetch the user's GitHub profile using the access token
+        user_data = requests.get('https://api.github.com/user', headers={
+            'Authorization': f'token {access_token}'
+        }).json()
+
+        # Extract relevant information from the GitHub user data
+        github_username = user_data.get('login')  # GitHub username
+        github_email = user_data.get('email')  # GitHub email (maybe None)
+
+        # Create a unique username for Django based on GitHub username
+        username = github_username if github_username else f"github_{user_data['id']}"
+
+        print("**** username: ", username)
+
+        # Check if the user already exists in Django based on the username or email
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={'email': github_email if github_email else f"{username}@example.com"}
+        )
+
+        if created:
+            # If the user was created, you can set additional fields or save the user
+            user.set_unusable_password()  # Optional: Set an unusable password since OAuth is used
+            user.save()
+
+        # Log the user in (if applicable)
+        login(request, user)
+
         # Redirect to the frontend Home page with the access token
-        frontend_redirect_url = f"http://localhost:5173/home?token={access_token}"  # Adjust the URL to match your frontend setup
+        frontend_redirect_url = f"http://localhost:5173/home?token={access_token}"  # Adjust URL as needed
         return redirect(frontend_redirect_url)
 
-        # display the user data in the backend
-        # user_data = requests.get('https://api.github.com/user', headers={
-        #     'Authorization': f'token {access_token}'
-        # }).json()
-        #
-        # return Response({'message': 'Logged in successfully', 'user': user_data})
+@method_decorator(csrf_exempt, name='dispatch')
+class SaveRepository(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated before saving
+
+    def post(self, request):
+        user = request.user  # Get the currently logged-in user
+        selected_repo = request.data.get('selected_repo')  # Expecting the repository data as JSON
+
+        # Validate the input
+        if not selected_repo:
+            return Response({'error': 'Repository data is missing'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create or update the UserRepository object linked to the current user
+        UserRepository.objects.create(
+            user=user,
+            selected_repo=selected_repo
+        )
+
+        return Response({'message': 'Repository saved successfully!'}, status=status.HTTP_201_CREATED)
+
+class GetSelectedRepository(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            # Retrieve the most recently selected repository for the user
+            selected_repo = UserRepository.objects.filter(user=user).order_by('-selected_at').first()
+            if selected_repo:
+                return Response({'selected_repo': selected_repo.selected_repo}, status=status.HTTP_200_OK)
+            else:
+                return Response({'selected_repo': None}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WebhookEndpoint(APIView):
+    """
+    A simple webhook endpoint that receives a POST request with data payload
+    and publishes the received data (e.g., logs it).
+    """
+    def post(self, request):
+        # Optional: Verify a secret token from headers
+        secret_token = request.headers.get('X-Hook-Secret')
+        expected_token = settings.WEBHOOK_SECRET_TOKEN  # Ensure this is set in settings.py
+
+        if secret_token != expected_token:
+            logger.warning("Invalid secret token received for webhook")
+            return Response({'error': 'Invalid token'}, status=status.HTTP_403_FORBIDDEN)
+
+        payload = request.data
+        logger.info(f"Received webhook payload: {payload}")
+
+        return Response({'message': 'Payload received successfully'}, status=status.HTTP_200_OK)
+
