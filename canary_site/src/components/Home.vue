@@ -15,21 +15,16 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-// Define a reactive array to store repositories
 const repositories = ref([]);
 
-// Fetch the GitHub repositories using the access token
+// Function to fetch GitHub repositories using the access token
 const fetchRepositories = async (accessToken) => {
-  Console.log("*** accessToken: " + accessToken);
   try {
-    // Fetch the user's repositories from GitHub using the access token
     const response = await axios.get('https://api.github.com/user/repos', {
       headers: {
-        Authorization: `token ${accessToken}`, // Include the access token in the request header
+        Authorization: `token ${accessToken}`, // Use the token correctly
       },
     });
-
-    // Store the fetched repositories in the reactive array
     repositories.value = response.data;
   } catch (error) {
     console.error('Failed to fetch repositories:', error);
@@ -37,15 +32,21 @@ const fetchRepositories = async (accessToken) => {
   }
 };
 
-// Simulate fetching the access token from the backend or session storage
+// Retrieve the access token from the URL parameters
+const getAccessTokenFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('token');
+};
+
+// Fetch repositories on component mount
 onMounted(() => {
-  // Replace this with the actual token retrieval logic
-  const accessToken = sessionStorage.getItem('github_access_token') || 'your_access_token_here';
+  const accessToken = getAccessTokenFromUrl();
 
   if (accessToken) {
     fetchRepositories(accessToken);
   } else {
     console.error('Access token is missing.');
+    alert('Access token is missing. Please log in again.');
   }
 });
 </script>
