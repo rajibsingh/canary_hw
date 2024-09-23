@@ -161,10 +161,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:5173',  # Allow requests from your frontend's origin
-# ]
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',  # Allow requests from your frontend's origin
+]
+# CORS_ALLOW_ALL_ORIGINS = True
 
 GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
 GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
@@ -174,3 +174,16 @@ CSP_SCRIPT_SRC = [
     "'unsafe-inline'",  # Not recommended for production without understanding risks
     'https://github.com',
 ]
+
+CSRF_COOKIE_NAME = "csrftoken"  # Default name of the CSRF token cookie
+CSRF_COOKIE_HTTPONLY = False    # Allows JavaScript to access the cookie (necessary to set it to False)
+
+# Allow credentials (e.g., cookies) to be sent in CORS requests
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",  # Allow CSRF requests from your Vue frontend
+]
+
+

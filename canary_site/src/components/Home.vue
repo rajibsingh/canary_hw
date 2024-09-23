@@ -4,7 +4,14 @@
     <h1>Welcome to Your GitHub Repositories</h1>
     <ul v-if="repositories.length">
       <li v-for="repo in repositories" :key="repo.id">
-        <a :href="repo.html_url" target="_blank">{{ repo.name }}</a>
+        <label>
+          <input
+              type="checkbox"
+              :checked="repo.id === selectedRepoId"
+              @change="selectRepository(repo)"
+          />
+          <a :href="repo.html_url" target="_blank">{{ repo.name }}</a>
+        </label>
       </li>
     </ul>
     <p v-else>Loading your repositories...</p>
@@ -14,33 +21,65 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { getCSRFToken } from '../utils/csrf';
 
-const repositories = ref([]);
+const repositories = ref([]); // Store the list of repositories
+const selectedRepoId = ref(null); // Store the ID of the currently selected repository
+let accessToken = ''; // Store the access token globally
 
-// Function to fetch GitHub repositories using the access token
+// Function to fetch the GitHub repositories using the access token
 const fetchRepositories = async (accessToken) => {
   try {
     const response = await axios.get('https://api.github.com/user/repos', {
       headers: {
-        Authorization: `token ${accessToken}`, // Use the token correctly
+        Authorization: `token ${accessToken}`, // Use the access token to authenticate the request
       },
     });
-    repositories.value = response.data;
+    repositories.value = response.data; // Set the fetched repositories
   } catch (error) {
     console.error('Failed to fetch repositories:', error);
     alert('An error occurred while fetching your repositories.');
   }
 };
 
-// Retrieve the access token from the URL parameters
+// Function to retrieve the access token from the URL parameters
 const getAccessTokenFromUrl = () => {
   const params = new URLSearchParams(window.location.search);
   return params.get('token');
 };
 
+// Function to handle repository selection
+const selectRepository = async (repo) => {
+  // Set the selected repository ID
+  selectedRepoId.value = repo.id;
+
+  // Save the selected repository to the backend
+  try {
+    // const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const response = await axios.post('http://127.0.0.1:8000/gh_connect/save-repository/', {
+      selected_repo: {
+        name: repo.name,
+        url: repo.html_url,
+        description: repo.description,
+        id: repo.id,
+      },
+    }, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': getCSRFToken()
+      },
+    });
+
+    alert(response.data.message);
+  } catch (error) {
+    console.error('Error saving repository:', error);
+    alert('Failed to save the repository.');
+  }
+};
+
 // Fetch repositories on component mount
 onMounted(() => {
-  const accessToken = getAccessTokenFromUrl();
+  accessToken = getAccessTokenFromUrl();
 
   if (accessToken) {
     fetchRepositories(accessToken);
@@ -63,12 +102,15 @@ ul {
 
 li {
   margin: 10px 0;
+  display: flex;
+  align-items: center;
 }
 
 a {
   color: #0366d6;
   text-decoration: none;
   font-weight: bold;
+  margin-left: 8px;
 }
 
 a:hover {
