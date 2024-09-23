@@ -42,6 +42,29 @@ const fetchRepositories = async (accessToken) => {
   }
 };
 
+// Function to fetch the previously selected repository from the backend
+const fetchSelectedRepository = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/gh_connect/get-selected-repository/', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'X-CSRFToken': getCSRFToken()
+      },
+    });
+
+    const selectedRepo = response.data.selected_repo;
+    if (selectedRepo) {
+      // Find the matching repository from the list and set it as selected
+      const matchingRepo = repositories.value.find(repo => repo.id === selectedRepo.id);
+      if (matchingRepo) {
+        selectedRepoId.value = matchingRepo.id;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch the previously selected repository:', error);
+  }
+};
+
 // Function to retrieve the access token from the URL parameters
 const getAccessTokenFromUrl = () => {
   const params = new URLSearchParams(window.location.search);

@@ -1,5 +1,7 @@
 
 from django.shortcuts import redirect
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -10,11 +12,14 @@ from django.contrib.auth import login  # Import login function to log in the use
 from django.conf import settings
 from .models import UserRepository
 import requests
+import logging
 
 import pprint
 
 from .models import GH_User
 from .serializers import GH_UserSerializer
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 class GH_UserViewSet(viewsets.ModelViewSet):
@@ -92,6 +97,7 @@ class GitHubCallback(APIView):
         frontend_redirect_url = f"http://localhost:5173/home?token={access_token}"  # Adjust URL as needed
         return redirect(frontend_redirect_url)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class SaveRepository(APIView):
     permission_classes = [IsAuthenticated]  # Ensure the user is authenticated before saving
 
@@ -111,4 +117,38 @@ class SaveRepository(APIView):
 
         return Response({'message': 'Repository saved successfully!'}, status=status.HTTP_201_CREATED)
 
+class GetSelectedRepository(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            # Retrieve the most recently selected repository for the user
+            selected_repo = UserRepository.objects.filter(user=user).order_by('-selected_at').first()
+            if selected_repo:
+                return Response({'selected_repo': selected_repo.selected_repo}, status=status.HTTP_200_OK)
+            else:
+                return Response({'selected_repo': None}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WebhookEndpoint(APIView):
+    """
+    A simple webhook endpoint that receives a POST request with data payload
+    and publishes the received data (e.g., logs it).
+    """
+    def post(self, request):
+        # Optional: Verify a secret token from headers
+        secret_token = request.headers.get('X-Hook-Secret')
+        expected_token = settings.WEBHOOK_SECRET_TOKEN  # Ensure this is set in settings.py
+
+        if secret_token != expected_token:
+            logger.warning("Invalid secret token received for webhook")
+            return Response({'error': 'Invalid token'}, status=status.HTTP_403_FORBIDDEN)
+
+        payload = request.data
+        logger.info(f"Received webhook payload: {payload}")
+
+        return Response({'message': 'Payload received successfully'}, status=status.HTTP_200_OK)
 
